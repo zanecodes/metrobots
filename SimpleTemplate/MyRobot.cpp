@@ -307,6 +307,8 @@ class RobotDemo : public SimpleRobot
 	
 	float P, I, D, maxRPS;
 	
+	SmartDashboard *sdash;
+	
 public:
 	RobotDemo(void):
 		flMotor(1),
@@ -367,6 +369,8 @@ public:
 		launchThrottle = 0.0;
 
 		vex = new Victor(8);
+		
+		sdash = SmartDashboard::GetInstance();
 		
 		autoLaunchSpeed = 0.0;
 		autoLaunchSetSpeed = 0.0;
@@ -560,7 +564,7 @@ public:
 			} */
 			
 			//2 point shot
-			if (step == 0 && t.Get() >= 0.0) {
+			/*if (step == 0 && t.Get() >= 0.0) {
 				step++;
 				//launchSpeed = scalePower( 2.70, DriverStation::GetInstance()->GetBatteryVoltage());
 				//launchSpeed = max(0.16, min(launchSpeed, 0.25));
@@ -601,7 +605,7 @@ public:
 				launch2.Set(0.0);
 				//wheelf.Set(Relay::kOn);
 				t.Reset();
-			}
+			}*/
 			
 			
 			/*else if (step == 6 && t.Get() >= 0.5) {
@@ -631,7 +635,11 @@ public:
 			text->Printf(DriverStationLCD::kUser_Line3, 1, "Track: %f", getTurnOffset() );
 			text->Printf(DriverStationLCD::kUser_Line4, 1, "dist: %f", getHeight() );
 			text->Printf(DriverStationLCD::kUser_Line5, 1, "step: %d, time: %f", step, t.Get());
-			text->Printf(DriverStationLCD::kUser_Line6, 1, "%f, %f, pid error: %f\n", launch1Proximity.PIDGet(), launch2Proximity.PIDGet(), launch1pid.GetError() );
+			sdash->PutInt("flencoder", flEncoder.Get());
+			sdash->PutInt("frencoder", frEncoder.Get());
+			sdash->PutInt("blencoder", blEncoder.Get());
+			sdash->PutInt("brencoder", brEncoder.Get());
+			text->Printf(DriverStationLCD::kUser_Line6, 1, "encoders: %d %d %d %d\n", flEncoder.Get(), frEncoder.Get(), blEncoder.Get(), brEncoder.Get());
 			text->UpdateLCD();
 		}
 			
