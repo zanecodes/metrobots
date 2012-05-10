@@ -182,7 +182,7 @@ public:
 	}
 };
 
-class PIDSpeedController : public PIDController, public SpeedController {
+class PIDSpeedController : public SendablePIDController, public SpeedController {
 public:
 	float speed, scale;
 	SpeedController *motor;
@@ -191,7 +191,7 @@ public:
 	PIDSpeedController(float p, float i, float d, PIDSource *source, SpeedController *_motor, float _scale) :
 		motorOutput(_motor),
 		speed(0.0),
-		PIDController(p, i, d, source, &motorOutput)
+		SendablePIDController(p, i, d, source, &motorOutput)
 	{
 		SetOutputRange(-1.0, 1.0);
 		scale = _scale;
@@ -202,12 +202,12 @@ public:
 	}
 	
 	void Enable() {
-		PIDController::Enable();
+		SendablePIDController::Enable();
 		Set(speed);
 	}
 	
 	void Disable() {
-		PIDController::Disable();
+		SendablePIDController::Disable();
 		Set(speed);
 	}
 	
@@ -217,9 +217,9 @@ public:
 	
 	void Set(float _speed, UINT8 syncGroup=0) {
 		speed = _speed;
-		if (this->IsEnabled()) SetSetpoint(speed * scale);
-		else motor->Set(speed);
-		//motor->Set(speed);
+		if (this->SendablePIDController::IsEnabled()) SendablePIDController::SetSetpoint(speed * scale);
+		//else motor->Set(speed);
+		motor->Set(speed);
 	}
 };
 
@@ -294,6 +294,7 @@ class RobotDemo : public SimpleRobot
 	PIDSpeedController frSpeed;
 	PIDSpeedController blSpeed;
 	PIDSpeedController brSpeed;
+	
 	
 	//PIDController launch1pid;
 	//PIDController launch2pid;
@@ -394,10 +395,10 @@ public:
 		blEncoder.SetPIDSourceParameter(Encoder::kRate);
 		brEncoder.SetPIDSourceParameter(Encoder::kRate);
 		
-		/*flSpeed.Enable();
+		flSpeed.Enable();
 		frSpeed.Enable();
 		blSpeed.Enable();
-		brSpeed.Enable();*/
+		brSpeed.Enable();
 		
 		myRobot.SetInvertedMotor(RobotDrive::kFrontLeftMotor, true);
 		myRobot.SetInvertedMotor(RobotDrive::kRearLeftMotor, true);
@@ -635,10 +636,6 @@ public:
 			text->Printf(DriverStationLCD::kUser_Line3, 1, "Track: %f", getTurnOffset() );
 			text->Printf(DriverStationLCD::kUser_Line4, 1, "dist: %f", getHeight() );
 			text->Printf(DriverStationLCD::kUser_Line5, 1, "step: %d, time: %f", step, t.Get());
-			sdash->PutInt("flencoder", flEncoder.Get());
-			sdash->PutInt("frencoder", frEncoder.Get());
-			sdash->PutInt("blencoder", blEncoder.Get());
-			sdash->PutInt("brencoder", brEncoder.Get());
 			text->Printf(DriverStationLCD::kUser_Line6, 1, "encoders: %d %d %d %d\n", flEncoder.Get(), frEncoder.Get(), blEncoder.Get(), brEncoder.Get());
 			text->UpdateLCD();
 		}
@@ -759,6 +756,15 @@ public:
 		
 		while (IsOperatorControl() && ! IsDisabled())
 		{
+			
+			sdash->PutInt("flencoder", flEncoder.Get());
+			sdash->PutInt("frencoder", frEncoder.Get());
+			sdash->PutInt("blencoder", blEncoder.Get());
+			sdash->PutInt("brencoder", brEncoder.Get());
+			sdash->PutData( "flSpeed", &flSpeed );
+			sdash->PutData( "frSpeed", &frSpeed );
+			sdash->PutData( "blSpeed", &blSpeed );
+			sdash->PutData( "brSpeed", &brSpeed );
 			
 			//Handles the Toggles and Throttle
 			handleToggles();
